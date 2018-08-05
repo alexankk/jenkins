@@ -19,7 +19,7 @@ pipeline{
                 script{
                     sh('''
                         set +x
-                        exit 0
+                        #exit 0
                         mkdir -p ~/.kube
                         cat <<EOF > ~/.kube/config
 apiVersion: v1
@@ -54,7 +54,7 @@ EOF
                 script{
                     sh('''
                         set +x
-                        exit 0
+                        #exit 0
                         wget "'''+helmHost+helmPath+'''/'''+helmPack+'''"
                         tar -xzf '''+helmPack+'''
                     ''')
@@ -66,7 +66,7 @@ EOF
                 script{
                     sh('''
                         set +x
-                        exit 0
+                        #exit 0
                         cd linux-amd64
                         ./helm init
                         kubectl create serviceaccount --namespace kube-system tiller || echo -n
@@ -83,7 +83,7 @@ EOF
                 script{
                     sh('''
                         set +x
-                        exit 0
+                        #exit 0
                         cd linux-amd64
                         ./helm install --name artifactory \\
                        --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss \\
@@ -107,7 +107,7 @@ EOF
                 script{
                     sh('''
                         set +x
-                        exit 0
+                        #exit 0
                         echo "Waiting for services are redy"
                         ti=90
                         while [ $ti -gt 0 ]; do
@@ -140,7 +140,7 @@ EOF
                 script{
                     sh('''
                         set +x
-                        exit 0
+                        #exit 0
                         export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
                         ART_AUTH=$(echo -n "admin:password" | base64)
                         curl --header "Content-Type: application/json" \\
@@ -151,7 +151,7 @@ EOF
                     ''')
                     sh('''
                         set +x
-                        exit 0
+                        #exit 0
                         export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
                         ART_AUTH=$(echo -n "admin:password" | base64)
                         curl --header "Content-Type: application/json" \\
