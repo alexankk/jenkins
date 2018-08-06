@@ -181,7 +181,6 @@ pipeline{
                     ansiColor('xterm'){
                         sh('''
                             set +x
-                            exit 0
                             cd '''+projName+'''/artifactory-maven-plugin-example
                             mvn deploy -Dusername='''+artUser+''' -Dpassword='''+artPass+''' -Dbuildnumber='''+BUILD_NUMBER+''' | tee deploy.log
                         ''')
@@ -190,11 +189,13 @@ pipeline{
             }
         }
     }
-    /*
     post {
         always {
-            emailext attachLog: true, body: '${DEFAULT_CONTENT}', subject: '${DEFAULT_SUBJECT}', to: 'alexankk@gmail.com'
+            if (env.MAIL_RECIPIENTS!=''){
+                emailext attachLog: true, body: '${DEFAULT_CONTENT}', subject: '${DEFAULT_SUBJECT}', to: MAIL_RECIPIENTS
+            }else{
+                echo 'No e-mail addresses are pointed.'
+            }
         }
     }
-    */
-}
+ 
