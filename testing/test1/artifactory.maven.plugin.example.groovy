@@ -81,8 +81,9 @@ EOF
         stage('Deploy artifactory'){
             steps{
                 script{
-                    artDeployed=(sh(script:'./helm ls --all artifactory | grep artifactory | sed "s/.*\\(DEPLOYED\\).*/\\1/"',returnStdout: true).trim()=='DEPLOYED')
+                    artDeployed=sh(script:'./helm ls --all artifactory | grep artifactory | sed "s/.*\\(DEPLOYED\\).*/\\1/"',returnStdout: true).trim()
                     println artDeployed
+                    artDeployed=(artDeployed=='DEPLOYED')
                     if (!artDeployed){
                         sh('''
                             set +x
