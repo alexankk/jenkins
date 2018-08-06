@@ -38,8 +38,15 @@ pipeline{
             steps{
                 script{
                     sh('''
-                        exit 0
+                        echo '''+GC_CERTIFICATE+''' > $WORKSPACE/cluster.ca
+                        kubectl config set-cluster '''+GC_CLUSTER_NAME+''' --server='''+GC_SERVER_HOST+''' --certificate-authority=$WORKSPACE/cluster.ca
+                        kubectl config set-credentials u-'''+GC_CLUSTER_NAME+''' --username='''+GC_ADMIN_NAME+''' --password='''+GC_ADMIN_PASSWORD+'''
+                        kubectl config set-context gc-'''+GC_CLUSTER_NAME+''' --cluster='''+GC_CLUSTER_NAME+''' --user=u-'''+GC_CLUSTER_NAME+'''
+                        kubectl config use-context gc-'''+GC_CLUSTER_NAME+'''
+                    ''')
+                    sh('''
                         set +x
+                        exit 0
                         mkdir -p ~/.kube
                         cat <<EOF > ~/.kube/config
 apiVersion: v1
