@@ -198,10 +198,10 @@ EOF
                 }
             }
         }
-        post {
-            always {
-                emailext attachLog: true, body: '${DEFAULT_CONTENT}', subject: '${DEFAULT_SUBJECT}', to: 'alexankk@gmail.com'
-            }
+    }
+    post {
+        always {
+            emailext attachLog: true, body: '${DEFAULT_CONTENT}', subject: '${DEFAULT_SUBJECT}', to: 'alexankk@gmail.com'
         }
     }
 }
