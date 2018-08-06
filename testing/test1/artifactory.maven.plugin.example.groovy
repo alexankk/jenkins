@@ -25,7 +25,6 @@ pipeline{
                         mv -f $(tar -xzvf helm-$HELM_VER-linux-amd64.tar.gz | grep helm) $WORKSPACE/bin
                         cd $WORKSPACE/bin
                         curl -sLO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-                        #mv -f kubectl $WORKSPACE/bin
                         chmod +x *
                     ''')
                     env.PATH+=':'+WORKSPACE+'/bin'
