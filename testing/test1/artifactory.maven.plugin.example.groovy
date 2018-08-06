@@ -191,10 +191,12 @@ pipeline{
     }
     post {
         always {
-            if (env.MAIL_RECIPIENTS!=''){
-                emailext attachLog: true, body: '${DEFAULT_CONTENT}', subject: '${DEFAULT_SUBJECT}', to: MAIL_RECIPIENTS
-            }else{
-                echo 'No e-mail addresses are pointed.'
+            step{
+                if (env.MAIL_RECIPIENTS!=''){
+                    emailext attachLog: true, body: '${DEFAULT_CONTENT}', subject: '${DEFAULT_SUBJECT}', to: MAIL_RECIPIENTS
+                }else{
+                    echo 'No e-mail addresses are pointed.'
+                }
             }
         }
     }
