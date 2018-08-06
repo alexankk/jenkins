@@ -26,7 +26,7 @@ pipeline{
                         curl -sLO https://storage.googleapis.com/kubernetes-helm/helm-$HELM_VER-linux-amd64.tar.gz
                         mv -f $(tar -xzvf helm-$HELM_VER-linux-amd64.tar.gz | grep helm) $WORKSPACE/bin
                         cd $WORKSPACE/bin
-                        curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
+                        curl -sLO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
                         #mv -f kubectl $WORKSPACE/bin
                         chmod +x *
                     ''')
