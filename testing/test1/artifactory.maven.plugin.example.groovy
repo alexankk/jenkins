@@ -14,6 +14,9 @@ pipeline{
                     artUser='admin'
                     artPass='password'
                     haExtIp=''
+                    projUrl='https://github.com/jfrog/'
+                    projName='project-examples'
+                    projBranch='master'
                 }
             }
         }
@@ -39,52 +42,12 @@ pipeline{
             steps{
                 script{
                     sh('''
+                        set +x
                         echo \''''+GC_CERTIFICATE+'''\' > $WORKSPACE/cluster.ca
                         kubectl config set-cluster '''+GC_CLUSTER_NAME+''' --server='''+GC_SERVER_HOST+''' --certificate-authority=$WORKSPACE/cluster.ca
                         kubectl config set-credentials u-'''+GC_CLUSTER_NAME+''' --username='''+GC_ADMIN_NAME+''' --password='''+GC_ADMIN_PASSWORD+'''
                         kubectl config set-context gc-'''+GC_CLUSTER_NAME+''' --cluster='''+GC_CLUSTER_NAME+''' --user=u-'''+GC_CLUSTER_NAME+'''
                         kubectl config use-context gc-'''+GC_CLUSTER_NAME+'''
-                    ''')
-                    sh('''
-                        set +x
-                        exit 0
-                        mkdir -p ~/.kube
-                        cat <<EOF > ~/.kube/config
-apiVersion: v1
-clusters:
-- cluster:
-    certificate-authority-data: '''+gcSert+'''
-    server: https://'''+gcServer+'''
-  name: gke_nifty-field-211113_us-central1-a_cluster-1
-contexts:
-- context:
-    cluster: gke_nifty-field-211113_us-central1-a_cluster-1
-    user: gke_nifty-field-211113_us-central1-a_cluster-1
-  name: gke_nifty-field-211113_us-central1-a_cluster-1
-current-context: gke_nifty-field-211113_us-central1-a_cluster-1
-kind: Config
-preferences: {}
-users:
-- name: gke_nifty-field-211113_us-central1-a_cluster-1
-  user:
-    password: '''+gcUserPass+'''
-    username: admin
-
-current-context: "gke_nifty-field-211113_us-central1-a_cluster-1"
-EOF
-                        chmod 600 ~/.kube/config
-                    ''')
-                }
-            }
-        }
-        stage('Check helm is setup'){
-            steps{
-                script{
-                    sh('''
-                        set +x
-                        exit 0
-                        wget -q "'''+helmHost+helmPath+'''/'''+helmPack+'''"
-                        tar -xzf '''+helmPack+'''
                     ''')
                 }
             }
@@ -94,13 +57,11 @@ EOF
                 script{
                     sh('''
                         set +x
-                        exit 0
-                        cd linux-amd64
-                        ./helm init
+                        helm init
                         kubectl create serviceaccount --namespace kube-system tiller || echo -n
                         kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller || echo -n
                         kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}' || echo -n
-                        ./helm init --upgrade
+                        helm init --upgrade
                         sleep 10
                     ''')
                 }
@@ -109,25 +70,22 @@ EOF
         stage('Deploy artifactory'){
             steps{
                 script{
-                    //artDeployed=(sh(script:'cd linux-amd64; ./helm ls --all artifactory | grep artifactory | sed "s/.*\\(DEPLOYED\\).*/\\1/"',returnStdout: true).trim()=='DEPLOYED')
-                    artDeployed=true
+                    artDeployed=(sh(script:'cd linux-amd64; ./helm ls --all artifactory | grep artifactory | sed "s/.*\\(DEPLOYED\\).*/\\1/"',returnStdout: true).trim()=='DEPLOYED')
                     if (!artDeployed){
                         sh('''
-                            set +x
-                            cd linux-amd64
-                            ./helm install --name artifactory \\
-                           --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss \\
-                           --set artifactory.resources.requests.cpu="500m" \\
-                           --set artifactory.resources.limits.cpu="2" \\
-                           --set artifactory.resources.requests.memory="1Gi" \\
-                           --set artifactory.resources.limits.memory="2Gi" \\
-                           --set artifactory.javaOpts.xms="1g" \\
-                           --set artifactory.javaOpts.xmx="2g" \\
-                           --set nginx.resources.requests.cpu="100m" \\
-                           --set nginx.resources.limits.cpu="250m" \\
-                           --set nginx.resources.requests.memory="250Mi" \\
-                           --set nginx.resources.limits.memory="500Mi" \\
-                           stable/artifactory
+                            set +x\n\
+                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss"
+                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.resources.requests.cpu=\\"500m\\""
+                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.resources.limits.cpu=\\"2\\""
+                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.resources.requests.memory=\\"1Gi\\""
+                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.resources.limits.memory=\\"2Gi\\""
+                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.javaOpts.xms=\\"1g\\""
+                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.javaOpts.xmx=\\"2g\\""
+                            H_INSTALL_SET="${H_INSTALL_SET} --set nginx.resources.requests.cpu=\\"100m\\""
+                            H_INSTALL_SET="${H_INSTALL_SET} --set nginx.resources.limits.cpu=\\"250m\\""
+                            H_INSTALL_SET="${H_INSTALL_SET} --set nginx.resources.requests.memory=\\"250Mi\\""
+                            H_INSTALL_SET="${H_INSTALL_SET} --set nginx.resources.limits.memory=\\"500Mi\\""
+                            helm install --name artifactory $H_INSTALL_SET stable/artifactory
                         ''')
                     }
                 }
@@ -181,10 +139,6 @@ EOF
                             --request POST \\
                             --data \'{"type":"localRepoConfig","typeSpecific":{"localChecksumPolicy":"CLIENT","repoType":"Maven","icon":"maven","text":"Maven","maxUniqueSnapshots":"","handleReleases":true,"handleSnapshots":true,"suppressPomConsistencyChecks":false,"snapshotVersionBehavior":"UNIQUE","eagerlyFetchJars":false,"eagerlyFetchSources":false,"remoteChecksumPolicy":"GEN_IF_ABSENT","listRemoteFolderItems":true,"rejectInvalidJars":false,"pomCleanupPolicy":"discard_active_reference","url":"https://jcenter.bintray.com"},"advanced":{"cache":{"keepUnusedArtifactsHours":"","retrievalCachePeriodSecs":600,"assumedOfflineLimitSecs":300,"missedRetrievalCachePeriodSecs":1800},"network":{"socketTimeout":15000,"syncProperties":false,"lenientHostAuth":false,"cookieManagement":false},"blackedOut":false,"allowContentBrowsing":false},"basic":{"includesPattern":"**/*","includesPatternArray":["**/*"],"excludesPatternArray":[],"layout":"maven-2-default","publicDescription":"maven repo","internalDescription":"maven repo in"},"general":{"repoKey":"libs-release-local"}}\' \\
                             http://'''+haExtIp+'''/artifactory/ui/admin/repositories
-                        ''')
-                        sh('''
-                            set +x
-                            ART_AUTH=$(echo -n "'''+artUser+''':'''+artPass+'''" | base64)
                             curl -s --header "Content-Type: application/json" \\
                             --header "Authorization:Basic ${ART_AUTH}" \\
                             --request POST \\
@@ -199,12 +153,12 @@ EOF
             steps{
                 script{
                     checkout(poll: false, 
-                            scm: [$class: 'GitSCM', branches: [[name: '*/master']], 
+                            scm: [$class: 'GitSCM', branches: [[name: projBranch]], 
                             doGenerateSubmoduleConfigurations: false, 
-                            extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'project-examples'], 
+                            extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: projName], 
                                         [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], 
                             submoduleCfg: [], 
-                            userRemoteConfigs: [[url: 'https://github.com/jfrog/project-examples.git']]])
+                            userRemoteConfigs: [[url: projUrl+projName+'.git']]])
                 }
             }
         }
@@ -213,10 +167,8 @@ EOF
                 script{
                     sh('''
                         set +x
-                        exit 0
-                        cd project-examples/artifactory-maven-plugin-example
+                        cd '''+projName+'''/artifactory-maven-plugin-example
                         cp -f pom.xml pom.xml.orign
-                        #export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
                         cat pom.xml.orign | sed "s/localhost:8081/'''+haExtIp+'''/" > pom.xml
                     ''')
                 }
@@ -229,7 +181,7 @@ EOF
                         sh('''
                             set +x
                             exit 0
-                            cd project-examples/artifactory-maven-plugin-example
+                            cd '''+projName+'''/artifactory-maven-plugin-example
                             mvn deploy -Dusername='''+artUser+''' -Dpassword='''+artPass+''' -Dbuildnumber='''+BUILD_NUMBER+''' | tee deploy.log
                         ''')
                     }
