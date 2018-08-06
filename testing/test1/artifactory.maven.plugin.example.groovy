@@ -21,6 +21,7 @@ pipeline{
             steps{
                 script{
                     sh('''
+                        set +x
                         mkdir -p $WORKSPACE/bin
                         HELM_VER=$(curl -sL https://github.com/kubernetes/helm/releases | sed -n \'/Latest release<\\/a>/,$p\' | grep -oE \'v[0-9]+\\.[0-9]+\\.[0-9]+\' |head -1)
                         curl -sLO https://storage.googleapis.com/kubernetes-helm/helm-$HELM_VER-linux-amd64.tar.gz
@@ -38,7 +39,7 @@ pipeline{
             steps{
                 script{
                     sh('''
-                        echo '''+GC_CERTIFICATE+''' > $WORKSPACE/cluster.ca
+                        echo \''''+GC_CERTIFICATE+'''\' > $WORKSPACE/cluster.ca
                         kubectl config set-cluster '''+GC_CLUSTER_NAME+''' --server='''+GC_SERVER_HOST+''' --certificate-authority=$WORKSPACE/cluster.ca
                         kubectl config set-credentials u-'''+GC_CLUSTER_NAME+''' --username='''+GC_ADMIN_NAME+''' --password='''+GC_ADMIN_PASSWORD+'''
                         kubectl config set-context gc-'''+GC_CLUSTER_NAME+''' --cluster='''+GC_CLUSTER_NAME+''' --user=u-'''+GC_CLUSTER_NAME+'''
