@@ -11,6 +11,8 @@ pipeline{
                     gcSert='LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURERENDQWZTZ0F3SUJBZ0lSQUk4YTZra3dySU85ZytIZHBZK0FxTmN3RFFZSktvWklodmNOQVFFTEJRQXcKTHpFdE1Dc0dBMVVFQXhNa09HWXpabVEyT0RjdE5HVXdZUzAwWkdRNExUZzROalV0WWpVd01UaGlabU5oT1dObQpNQjRYRFRFNE1EZ3dOVEl6TVRrek1Gb1hEVEl6TURnd05UQXdNVGt6TUZvd0x6RXRNQ3NHQTFVRUF4TWtPR1l6ClptUTJPRGN0TkdVd1lTMDBaR1E0TFRnNE5qVXRZalV3TVRoaVptTmhPV05tTUlJQklqQU5CZ2txaGtpRzl3MEIKQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBd0F6OXpjR1hlSkdPSHI2S20vWi9SZHBJT2RHZ3ZWbmVTSWZIMEJUZQpaQW1UbVpZWktZOVRQeU05cGM2WWUxdFpuTzgxakxWQ0V5T3NCb2NrV0lsR3JkMzhCMWZUSENVQi9tMDdIeU03Ck81REVPTTg5V01xTzdETzF4ZzFUclF2azN5blZlK3dLSHVob1J2MkFlVG5UTFYrK1pDWDVwNDJkaFBHbVgzV3gKOUNjYVpzbTB0N1NTTFU2SThTSVJjcitpdzNld0RUQnFXZnRpejZZbFFtb1BObmNiSUkrODNuQk9WTUprM2UyWgpDSnZwdlBzeGVkVi96WHhlMGZPbStCMHZDQ3VpbldqQkk1aXFJL3dWZm1JNGhFRzBSd3VCUXpUVmdoZ2RkdVZJCkM1MmRySEVuaDJqeGp5MGF0SlpQSFAvdjhRalZZUkFGNmc5KzA2NXBMWkpsd1FJREFRQUJveU13SVRBT0JnTlYKSFE4QkFmOEVCQU1DQWdRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQQpGVDRmcXdzN0R1V1kvcjRkRzhKNWF4dndsNVdGYzJ5OEZma3ZXM2crTGJKY1h3cGQ3SHhjMmVua1lSZFBmVG9uClhURVdCRlRxS1BOTkdlUFRadG0ycVZVVlIwNk15ZDRlTUhsckJTNWxBQlU2b2tic2NBU3VTMGd5RjVhNXE2UVEKWWhMVUhaU0liQlo0SUdrQWNsclJUMEdlNkVsak5nYXB3SHVlMjd6MWttL1IrVklsWXlRZXgrdjY1YXVpYUNNbgpwS2xIMFl3MTVuOHVna3l0QmhueWJFK2VQRjZ1MHdlMlRtajllVlI0QVl1bGpXanl1ekpVMW1RTWNSL0IzYnZMCk1lbmFaby9qR2p4R0VzVkNlckZWYmtmYzZVVzhoc3EvOGowczkweXVwK2VmaklkQUM5Rms0NlZKMHVyTCsxNkQKU2UvR2hPSktmdVVaV0E4Qy90d3FZdz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K'
                     gcUserPass='aLghpQq5bzx7b58J'
                     gcServer='35.224.74.229'
+                    artUser='admin'
+                    artPass='password'
                     haExtIp=''
                 }
             }
@@ -20,7 +22,6 @@ pipeline{
                 script{
                     sh('''
                         set +x
-                        exit 0
                         mkdir -p ~/.kube
                         cat <<EOF > ~/.kube/config
 apiVersion: v1
@@ -55,7 +56,6 @@ EOF
                 script{
                     sh('''
                         set +x
-                        exit 0
                         wget -q "'''+helmHost+helmPath+'''/'''+helmPack+'''"
                         tar -xzf '''+helmPack+'''
                     ''')
@@ -67,7 +67,6 @@ EOF
                 script{
                     sh('''
                         set +x
-                        exit 0
                         cd linux-amd64
                         ./helm init
                         kubectl create serviceaccount --namespace kube-system tiller || echo -n
@@ -84,7 +83,6 @@ EOF
                 script{
                     sh('''
                         set +x
-                        exit 0
                         cd linux-amd64
                         ./helm install --name artifactory \\
                        --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss \\
@@ -108,7 +106,6 @@ EOF
                 script{
                     sh('''
                         set +x
-                        exit 0
                         echo "Waiting for services are redy"
                         ti=90
                         while [ $ti -gt 0 ]; do
@@ -141,12 +138,9 @@ EOF
         stage('Creating repositories'){
             steps{
                 script{
-                    echo 'External IP for balancer: '+haExtIp
                     sh('''
                         set +x
-                        #exit 0
-                        #export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-                        ART_AUTH=$(echo -n "admin:password" | base64)
+                        ART_AUTH=$(echo -n "'''+artUser+''':'''+artPass+'''" | base64)
                         curl -s --header "Content-Type: application/json" \\
                         --header "Authorization:Basic ${ART_AUTH}" \\
                         --request POST \\
@@ -155,9 +149,7 @@ EOF
                     ''')
                     sh('''
                         set +x
-                        #exit 0
-                        #export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-                        ART_AUTH=$(echo -n "admin:password" | base64)
+                        ART_AUTH=$(echo -n "'''+artUser+''':'''+artPass+'''" | base64)
                         curl -s --header "Content-Type: application/json" \\
                         --header "Authorization:Basic ${ART_AUTH}" \\
                         --request POST \\
@@ -200,10 +192,15 @@ EOF
                         sh('''
                             set +x
                             cd project-examples/artifactory-maven-plugin-example
-                            mvn deploy -Dusername=admin -Dpassword=password -Dbuildnumber='''+BUILD_NUMBER+''' | tee deploy.log
+                            mvn deploy -Dusername='''+artUser+''' -Dpassword='''+artPass+''' -Dbuildnumber='''+BUILD_NUMBER+''' | tee deploy.log
                         ''')
                     }
                 }
+            }
+        }
+        post {
+            always {
+                emailext attachLog: true, body: '${DEFAULT_CONTENT}', subject: '${DEFAULT_SUBJECT}', to: 'alexankk@gmail.com'
             }
         }
     }
