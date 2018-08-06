@@ -5,12 +5,6 @@ pipeline{
             steps{
                 script{
                     deleteDir()
-                    helmHost='https://storage.googleapis.com/'
-                    helmPath='kubernetes-helm'
-                    helmPack='helm-v2.10.0-rc.2-linux-amd64.tar.gz'
-                    gcSert='LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURERENDQWZTZ0F3SUJBZ0lSQU94Rk10Yy9RT3VzNzM3dkYvaW04MUF3RFFZSktvWklodmNOQVFFTEJRQXcKTHpFdE1Dc0dBMVVFQXhNa01qSXdaRFUzWWpJdFl6SmpPUzAwT0RrMUxUZzBabUV0TjJZM1kyUmxNV1JrTVdVMApNQjRYRFRFNE1EZ3dOakF3TlRRek1Wb1hEVEl6TURnd05UQXhOVFF6TVZvd0x6RXRNQ3NHQTFVRUF4TWtNakl3ClpEVTNZakl0WXpKak9TMDBPRGsxTFRnMFptRXROMlkzWTJSbE1XUmtNV1UwTUlJQklqQU5CZ2txaGtpRzl3MEIKQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBcVdIdzJaY1h6WmMwU3VtMFBFRjVXYnh3VDUrQWVZM1dYSVZLUXc2NwpjT2tHNklEaGtzMmQrcHZrK1RLVFlGN1NtMFoyU3p2Vm5UQXc2L2pyZnYvSU8rUUZXSzZQY0FpYWxVc05IaFJpClZiQngxTXNaNDdWQlJuZWFZNmxjSFVFcmx5U0VzWWRqQ1VhWGJ1SFRuTTNMaGp6ZFpXSmRncTJIOFlzRlAvVFAKV1ZpZXVZa2dRTGZxNVZUT0FmVUM0NG9IYTVQNVdLMitheEJLMHhYeitQWTNLcEpyeUVhdWtyaEZTa2hBbFNiRwo3c3hSRjliak8waVBxdXhGSmJKSHNqZm1HSjlvVmZFYzgvUjRVWEdHVExBUUpCTm9FZEMxdXc4endIZzZXZTVCCldiOVJuZXRXY25May9Fd0U0Y1MzWnRKVU9FT1RwVFRiT2Y5eTZQK2ZJNWtGNndJREFRQUJveU13SVRBT0JnTlYKSFE4QkFmOEVCQU1DQWdRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQQpSaTJiblZHZ2dsako1UTdEZ2YzaUtMWnltbmpJcE1WWVF4N1I3RmZzdXhZZ0lSdDFrdWpnNGdLN2NUS1ViTlk2CmJST1hkNXJXVWdyd2NaL0p1WFhVSWJLd0V3bzhjUzA1MXFVQmZvb0duWmlZaGVFR0dmZHhLOWdERGV3RWplZlkKMyt3MmNHQmRod0hxam9RWVU1dkpiZEMyT1RYR0RjaittRm9MMUU1c3k0dFdKb2loOHB5bFdlZFZYNG1OVW55aQpyN3o5SEY3WXU0bXV1eXJQcGJMVU52NWIxd2ZERXRaekxhRmdtc1NncHNGTkRwMmdTbFhHYTIwZlFTZERoNThuCi9MYkl4YnJhaElBdlJ0K25Hcld2MXFHZU9MYWk2WVUxN25vaXNWMEVVTmJhY1dTcFZCc2kxcHZqZmE0NkY3U2gKNXE4bFg0TXZQbnRHakRkYVdPUmk4dz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K'
-                    gcUserPass='RMRhBev6jclbR9h2'
-                    gcServer='35.232.203.55'
                     artUser='admin'
                     artPass='password'
                     haExtIp=''
@@ -44,7 +38,7 @@ pipeline{
                     sh('''
                         set +x
                         echo \''''+GC_CERTIFICATE+'''\' > $WORKSPACE/cluster.ca
-                        kubectl config set-cluster '''+GC_CLUSTER_NAME+''' --server='''+GC_SERVER_HOST+''' --certificate-authority=$WORKSPACE/cluster.ca
+                        kubectl config set-cluster '''+GC_CLUSTER_NAME+''' --server=https://'''+GC_SERVER_HOST+''' --certificate-authority=$WORKSPACE/cluster.ca
                         kubectl config set-credentials u-'''+GC_CLUSTER_NAME+''' --username='''+GC_ADMIN_NAME+''' --password='''+GC_ADMIN_PASSWORD+'''
                         kubectl config set-context gc-'''+GC_CLUSTER_NAME+''' --cluster='''+GC_CLUSTER_NAME+''' --user=u-'''+GC_CLUSTER_NAME+'''
                         kubectl config use-context gc-'''+GC_CLUSTER_NAME+'''
@@ -191,7 +185,7 @@ pipeline{
     }
     post {
         always {
-            step{
+            script{
                 if (env.MAIL_RECIPIENTS!=''){
                     emailext attachLog: true, body: '${DEFAULT_CONTENT}', subject: '${DEFAULT_SUBJECT}', to: MAIL_RECIPIENTS
                 }else{
