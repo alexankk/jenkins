@@ -55,7 +55,7 @@ EOF
                     sh('''
                         set +x
                         #exit 0
-                        wget "'''+helmHost+helmPath+'''/'''+helmPack+'''"
+                        wget -q "'''+helmHost+helmPath+'''/'''+helmPack+'''"
                         tar -xzf '''+helmPack+'''
                     ''')
                 }
@@ -132,6 +132,7 @@ EOF
                             fi
                         done
                     ''')
+                    haExtIp=sh(script:'kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath=\'{.status.loadBalancer.ingress[0].ip}\'',returnStdout: true).trim()
                 }
             }
         }
@@ -141,24 +142,25 @@ EOF
                     sh('''
                         set +x
                         #exit 0
-                        export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                        #export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
                         ART_AUTH=$(echo -n "admin:password" | base64)
-                        curl --header "Content-Type: application/json" \\
+                        curl -s --header "Content-Type: application/json" \\
                         --header "Authorization:Basic ${ART_AUTH}" \\
                         --request POST \\
                         --data \'{"type":"localRepoConfig","typeSpecific":{"localChecksumPolicy":"CLIENT","repoType":"Maven","icon":"maven","text":"Maven","maxUniqueSnapshots":"","handleReleases":true,"handleSnapshots":true,"suppressPomConsistencyChecks":false,"snapshotVersionBehavior":"UNIQUE","eagerlyFetchJars":false,"eagerlyFetchSources":false,"remoteChecksumPolicy":"GEN_IF_ABSENT","listRemoteFolderItems":true,"rejectInvalidJars":false,"pomCleanupPolicy":"discard_active_reference","url":"https://jcenter.bintray.com"},"advanced":{"cache":{"keepUnusedArtifactsHours":"","retrievalCachePeriodSecs":600,"assumedOfflineLimitSecs":300,"missedRetrievalCachePeriodSecs":1800},"network":{"socketTimeout":15000,"syncProperties":false,"lenientHostAuth":false,"cookieManagement":false},"blackedOut":false,"allowContentBrowsing":false},"basic":{"includesPattern":"**/*","includesPatternArray":["**/*"],"excludesPatternArray":[],"layout":"maven-2-default","publicDescription":"maven repo","internalDescription":"maven repo in"},"general":{"repoKey":"libs-release-local"}}\' \\
-                        http://${SERVICE_IP}/artifactory/ui/admin/repositories
+                        #http://${SERVICE_IP}/artifactory/ui/admin/repositories
+                        http://'''+haExtIp+'''/artifactory/ui/admin/repositories
                     ''')
                     sh('''
                         set +x
                         #exit 0
-                        export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                        #export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
                         ART_AUTH=$(echo -n "admin:password" | base64)
-                        curl --header "Content-Type: application/json" \\
+                        curl -s --header "Content-Type: application/json" \\
                         --header "Authorization:Basic ${ART_AUTH}" \\
                         --request POST \\
                         --data \'{"type":"localRepoConfig","typeSpecific":{"localChecksumPolicy":"CLIENT","repoType":"Maven","icon":"maven","text":"Maven","maxUniqueSnapshots":"","handleReleases":true,"handleSnapshots":true,"suppressPomConsistencyChecks":false,"snapshotVersionBehavior":"UNIQUE","eagerlyFetchJars":false,"eagerlyFetchSources":false,"remoteChecksumPolicy":"GEN_IF_ABSENT","listRemoteFolderItems":true,"rejectInvalidJars":false,"pomCleanupPolicy":"discard_active_reference","url":"https://jcenter.bintray.com"},"advanced":{"cache":{"keepUnusedArtifactsHours":"","retrievalCachePeriodSecs":600,"assumedOfflineLimitSecs":300,"missedRetrievalCachePeriodSecs":1800},"network":{"socketTimeout":15000,"syncProperties":false,"lenientHostAuth":false,"cookieManagement":false},"blackedOut":false,"allowContentBrowsing":false},"basic":{"includesPattern":"**/*","includesPatternArray":["**/*"],"excludesPatternArray":[],"layout":"maven-2-default","publicDescription":"maven repo","internalDescription":"maven repo in"},"general":{"repoKey":"libs-snapshot-local"}}\' \\
-                        http://${SERVICE_IP}/artifactory/ui/admin/repositories
+                        http://'''+haExtIp+'''/artifactory/ui/admin/repositories
                     ''')
                 }
             }
@@ -183,8 +185,8 @@ EOF
                         set +x
                         cd project-examples/artifactory-maven-plugin-example
                         cp -f pom.xml pom.xml.orign
-                        export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-                        cat pom.xml.orign | sed "s/localhost:8081/${SERVICE_IP}/" > pom.xml
+                        #export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+                        cat pom.xml.orign | sed "s/localhost:8081/'''+haExtIp+'''/" > pom.xml
                     ''')
                 }
             }
