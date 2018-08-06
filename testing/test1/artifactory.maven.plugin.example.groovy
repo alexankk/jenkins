@@ -74,18 +74,19 @@ pipeline{
                     if (!artDeployed){
                         sh('''
                             set -x
-                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss"
-                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.resources.requests.cpu=\\"500m\\""
-                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.resources.limits.cpu=\\"2\\""
-                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.resources.requests.memory=\\"1Gi\\""
-                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.resources.limits.memory=\\"2Gi\\""
-                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.javaOpts.xms=\\"1g\\""
-                            H_INSTALL_SET="${H_INSTALL_SET} --set artifactory.javaOpts.xmx=\\"2g\\""
-                            H_INSTALL_SET="${H_INSTALL_SET} --set nginx.resources.requests.cpu=\\"100m\\""
-                            H_INSTALL_SET="${H_INSTALL_SET} --set nginx.resources.limits.cpu=\\"250m\\""
-                            H_INSTALL_SET="${H_INSTALL_SET} --set nginx.resources.requests.memory=\\"250Mi\\""
-                            H_INSTALL_SET="${H_INSTALL_SET} --set nginx.resources.limits.memory=\\"500Mi\\""
-                            helm install --name artifactory $H_INSTALL_SET stable/artifactory
+                            helm install --name artifactory \\
+                            --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss \\
+                            --set artifactory.resources.requests.cpu="500m" \\
+                            --set artifactory.resources.limits.cpu="2" \\
+                            --set artifactory.resources.requests.memory="1Gi" \\
+                            --set artifactory.resources.limits.memory="2Gi" \\
+                            --set artifactory.javaOpts.xms="1g" \\
+                            --set artifactory.javaOpts.xmx="2g" \\
+                            --set nginx.resources.requests.cpu="100m" \\
+                            --set nginx.resources.limits.cpu="250m" \\
+                            --set nginx.resources.requests.memory="250Mi" \\
+                            --set nginx.resources.limits.memory="500Mi" \\
+                            stable/artifactory
                         ''')
                     }
                 }
