@@ -82,6 +82,7 @@ EOF
             steps{
                 script{
                     artDeployed=(sh(script:'./helm ls --all artifactory | grep artifactory | sed "s/.*\\(DEPLOYED\\).*/\\1/"',returnStdout: true).trim()=='DEPLOYED')
+                    println artDeployed
                     if (!artDeployed){
                         sh('''
                             set +x
