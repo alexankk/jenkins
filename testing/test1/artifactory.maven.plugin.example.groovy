@@ -70,7 +70,7 @@ pipeline{
         stage('Deploy artifactory'){
             steps{
                 script{
-                    artDeployed=(sh(script:'cd linux-amd64; ./helm ls --all artifactory | grep artifactory | sed "s/.*\\(DEPLOYED\\).*/\\1/"',returnStdout: true).trim()=='DEPLOYED')
+                    artDeployed=(sh(script:'set +x;helm ls --all artifactory | grep artifactory | sed "s/.*\\(DEPLOYED\\).*/\\1/"',returnStdout: true).trim()=='DEPLOYED')
                     if (!artDeployed){
                         sh('''
                             set +x\n\
@@ -122,7 +122,7 @@ pipeline{
                             done
                         ''')
                     }
-                    haExtIp=sh(script:'kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath=\'{.status.loadBalancer.ingress[0].ip}\'',returnStdout: true).trim()
+                    haExtIp=sh(script:'set +x;kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath=\'{.status.loadBalancer.ingress[0].ip}\'',returnStdout: true).trim()
                     echo 'External IP for balancer: '+haExtIp
                 }
             }
