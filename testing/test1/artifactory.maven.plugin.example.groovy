@@ -81,7 +81,7 @@ pipeline{
                     artDeployed=(sh(script:'set +x;helm ls --all artifactory | grep artifactory | sed "s/.*\\(DEPLOYED\\).*/\\1/"',returnStdout: true).trim()=='DEPLOYED')
                     if (!artDeployed){
                         sh('''
-                            set -x
+                            set +x
                             helm install --name artifactory \\
                             --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss \\
                             --set artifactory.resources.requests.cpu="500m" \\
