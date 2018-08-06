@@ -22,10 +22,11 @@ pipeline{
                 script{
                     sh('''
                         mkdir -p $WORKSPACE/bin
-                        curl -sLO https://storage.googleapis.com/kubernetes-helm/helm-$(curl -sL https://github.com/kubernetes/helm/releases | sed -n \'/Latest release<\\/a>/,$p\' | grep -oE \\'v[0-9]+\\.[0-9]+\\.[0-9]+\' |head -1)-linux-amd64.tar.gz
-                        mv $(tar -xzvf helm-v2.9.1-linux-amd64.tar.gz | grep helm) $WORKSPACE/bin
+                        HELM_VER=$(curl -sL https://github.com/kubernetes/helm/releases | sed -n \'/Latest release<\\/a>/,$p\' | grep -oE \\'v[0-9]+\\.[0-9]+\\.[0-9]+\' |head -1)
+                        curl -sLO https://storage.googleapis.com/kubernetes-helm/helm-$HELM_VER-linux-amd64.tar.gz
+                        mv -f $(tar -xzvf helm-$HELM_VER-linux-amd64.tar.gz | grep helm) $WORKSPACE/bin
                         curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
-                        mv kubectl $WORKSPACE/bin
+                        mv -f kubectl $WORKSPACE/bin
                     ''')
                     env.PATH+=':'+WORKSPACE+'/bin'
                 }
