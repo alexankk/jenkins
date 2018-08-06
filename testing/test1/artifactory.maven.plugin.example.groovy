@@ -141,6 +141,7 @@ EOF
         stage('Creating repositories'){
             steps{
                 script{
+                    echo 'External IP for balancer: '+haExtIp
                     sh('''
                         set +x
                         #exit 0
