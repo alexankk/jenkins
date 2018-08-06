@@ -1,3 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////
+//        Deploing Artifactory cluster into Google Cloud
+//        Deploing artifactory-maven-plugin into Artifactory
+//
+//        Parameters for the job:
+//          - GC_CLUSTER_NAME   : String            : Name of GC cluster
+//          - GC_SERVER_HOST    : String            : IP or name GC endpoint
+//          - GC_ADMIN_NAME     : String            : Administrator user name
+//          - GC_ADMIN_PASSWORD : String            : Administrator user password
+//          - GC_CERTIFICATE    : Multi-line String : Certificate of GC cluster
+//          - MAIL_RECIPIENTS   : String            : E-mail address(es) to which the processing results will be sent
+//
+//
+////////////////////////////////////////////////////////////////////////////////
+
 pipeline{
     agent any
     stages{
