@@ -17,10 +17,25 @@ pipeline{
                 }
             }
         }
+        stage('Download utils'){
+            steps{
+                script{
+                    sh('''
+                        mkdir -p $WORKSPACE/bin
+                        curl -sLO https://storage.googleapis.com/kubernetes-helm/helm-$(curl -sL https://github.com/kubernetes/helm/releases | sed -n \'/Latest release<\\/a>/,$p\' | grep -oE \\'v[0-9]+\\.[0-9]+\\.[0-9]+\' |head -1)-linux-amd64.tar.gz
+                        mv $(tar -xzvf helm-v2.9.1-linux-amd64.tar.gz | grep helm) $WORKSPACE/bin
+                        curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
+                        mv kubectl $WORKSPACE/bin
+                    ''')
+                    env.PATH+=':'+WORKSPACE+'/bin'
+                }
+            }
+        }
         stage('Prep kube config'){
             steps{
                 script{
                     sh('''
+                        exit 0
                         set +x
                         mkdir -p ~/.kube
                         cat <<EOF > ~/.kube/config
@@ -56,6 +71,7 @@ EOF
                 script{
                     sh('''
                         set +x
+                        exit 0
                         wget -q "'''+helmHost+helmPath+'''/'''+helmPack+'''"
                         tar -xzf '''+helmPack+'''
                     ''')
@@ -67,6 +83,7 @@ EOF
                 script{
                     sh('''
                         set +x
+                        exit 0
                         cd linux-amd64
                         ./helm init
                         kubectl create serviceaccount --namespace kube-system tiller || echo -n
@@ -81,7 +98,8 @@ EOF
         stage('Deploy artifactory'){
             steps{
                 script{
-                    artDeployed=(sh(script:'cd linux-amd64; ./helm ls --all artifactory | grep artifactory | sed "s/.*\\(DEPLOYED\\).*/\\1/"',returnStdout: true).trim()=='DEPLOYED')
+                    //artDeployed=(sh(script:'cd linux-amd64; ./helm ls --all artifactory | grep artifactory | sed "s/.*\\(DEPLOYED\\).*/\\1/"',returnStdout: true).trim()=='DEPLOYED')
+                    artDeployed=true
                     if (!artDeployed){
                         sh('''
                             set +x
@@ -184,6 +202,7 @@ EOF
                 script{
                     sh('''
                         set +x
+                        exit 0
                         cd project-examples/artifactory-maven-plugin-example
                         cp -f pom.xml pom.xml.orign
                         #export SERVICE_IP=$(kubectl get svc --namespace default artifactory-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
@@ -198,6 +217,7 @@ EOF
                     ansiColor('xterm'){
                         sh('''
                             set +x
+                            exit 0
                             cd project-examples/artifactory-maven-plugin-example
                             mvn deploy -Dusername='''+artUser+''' -Dpassword='''+artPass+''' -Dbuildnumber='''+BUILD_NUMBER+''' | tee deploy.log
                         ''')
@@ -206,9 +226,11 @@ EOF
             }
         }
     }
+    /*
     post {
         always {
             emailext attachLog: true, body: '${DEFAULT_CONTENT}', subject: '${DEFAULT_SUBJECT}', to: 'alexankk@gmail.com'
         }
     }
+    */
 }
