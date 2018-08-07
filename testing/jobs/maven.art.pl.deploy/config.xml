@@ -1,0 +1,102 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.23">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.3.1"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.3.1">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description>Deploying maven-artifactory-plugin to Artifactory</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>GC_CLUSTER_NAME</name>
+          <description>Name of GC cluster</description>
+          <defaultValue>cluster-1</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GC_SERVER_HOST</name>
+          <description>IP or name GC endpoint</description>
+          <defaultValue>35.202.157.207</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GC_ADMIN_NAME</name>
+          <description>Administrator user name</description>
+          <defaultValue>admin</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>GC_ADMIN_PASSWORD</name>
+          <description>Administrator user password</description>
+          <defaultValue>{AQAAABAAAAAgu5MsEg7NRRhPIN7jie3HBI2BCukY9qZ8StzEhua+hY5CyAqjCfZV5gk9wwmT/d4Q}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>GC_CERTIFICATE</name>
+          <description>Certificate of GC cluster</description>
+          <defaultValue>-----BEGIN CERTIFICATE-----
+MIIDDDCCAfSgAwIBAgIRALecCqTAhinEptS8kj9rGbswDQYJKoZIhvcNAQELBQAw
+LzEtMCsGA1UEAxMkZjgxMDFiYzAtOTRiZi00MjdjLWIxODYtYTI2Nzk1MmI0NWE0
+MB4XDTE4MDgwNjIxNDY0OVoXDTIzMDgwNTIyNDY0OVowLzEtMCsGA1UEAxMkZjgx
+MDFiYzAtOTRiZi00MjdjLWIxODYtYTI2Nzk1MmI0NWE0MIIBIjANBgkqhkiG9w0B
+AQEFAAOCAQ8AMIIBCgKCAQEAnlR8r5BMpPmQd/s0n8eeTKhmg/W7ucESjrB0/KLT
+GclvXJJluvpl0nVA20hkUgNIsC3jkyn8QdByI2BV0aSAoDChUnV9pK6GJgiBUrA0
+EFWKXT+CNcOt56ypA/ejgmBg6S3nWuhkAnMtIp2zDcZwSsaPw+juJbA1fq7iQz+n
+/1hom6wLnO/j3FZ09rnpyZ6hzZkS6FtDECQTX0fjEGWQalc597+5U4/gf7d+h4dq
+n5ZGdTzM5TRqzrCV+ZifUQJ77ZzPcPVO3IH9EtBoA4z+pYEtbvR5QbPX1pzqw/+F
+fL3LuH9A0Y65fesUsfm5IZqKU9ju9kpH88fY1SjGyLMTLQIDAQABoyMwITAOBgNV
+HQ8BAf8EBAMCAgQwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEA
+PFqnqmwUosw6J5qYpPeDu2j+cSn5x+GTH2xiWWagZQ3/KFYHmwQUcbEAHNYIfcV/
+Q9yvOQJVdtqRWFqPcrx7dzmirf9DArQE4avXBnBSQDQsnAIYcdXlKbMMN2Jy3hxW
++6sZxe+ISCSxcZQ3LWTcoZD0CpSA68OI+9DJV7DFWNgpRSWKou/1kYryDs3SaLgB
+zNudEnrMP0w5KZzAma9WzJw4cknNd9CfLlyNHFdmvS/aTTNhSuBv9cGINLIE5DIl
+xsl1Spz0spZ2KJa5G4QSa+1q8F+Bgym45ZITAdbl9M9ykiSQMfgFXbopApKU+4ZW
+xDmfxx8o8BxyEqh4rV2Obg==
+-----END CERTIFICATE-----</defaultValue>
+          <trim>false</trim>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>MAIL_RECIPIENTS</name>
+          <description>E-mail address(es) to which the processing results will be sent</description>
+          <defaultValue>alexankk@gmail.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>5</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.54">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.1">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>https://github.com/alexankk/jenkins.git</url>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>*/master</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <submoduleCfg class="list"/>
+      <extensions/>
+    </scm>
+    <scriptPath>testing/test1/artifactory.maven.plugin.example.groovy</scriptPath>
+    <lightweight>true</lightweight>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
