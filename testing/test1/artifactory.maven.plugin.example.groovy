@@ -16,8 +16,8 @@
 pipeline{
     agent any
     stages{
-        stage('Init'){
-            steps{
+        stage('Init') {
+            steps {
                 script{
                     deleteDir()
                     artUser='admin'
@@ -113,7 +113,7 @@ pipeline{
                                 ART_STATE=$(kubectl get po | grep -v nginx | grep artifactory-artifactory | sed "s/.*\\(Running\\).*/\\1/")
                                 if [ "X${ART_STATE}" = "XRunning" ]; then ti=0; fi
                                 ti=$(($ti-1))
-                                if [ $ti -eq 0 ]; then 
+                                if [ $ti -eq 0 ]; then
                                     echo "Timeout starting Artifactory service in cluster"
                                     exit 1
                                 fi
@@ -124,7 +124,7 @@ pipeline{
                                 NGX_STATE=$(kubectl get po | grep nginx | sed "s/.*\\(Running\\).*/\\1/")
                                 if [ "X${NGX_STATE}" = "XRunning" ]; then ti=0; fi
                                 ti=$(($ti-1))
-                                if [ $ti -eq 0 ]; then 
+                                if [ $ti -eq 0 ]; then
                                     echo "Timeout starting Artifactory-Nginx service in cluster"
                                     exit 1
                                 fi
@@ -161,12 +161,12 @@ pipeline{
         stage('Cloning project-examples'){
             steps{
                 script{
-                    checkout(poll: false, 
-                            scm: [$class: 'GitSCM', branches: [[name: projBranch]], 
-                            doGenerateSubmoduleConfigurations: false, 
-                            extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: projName], 
-                                        [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], 
-                            submoduleCfg: [], 
+                    checkout(poll: false,
+                            scm: [$class: 'GitSCM', branches: [[name: projBranch]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: projName],
+                                        [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]],
+                            submoduleCfg: [],
                             userRemoteConfigs: [[url: projUrl+projName+'.git']]])
                 }
             }
